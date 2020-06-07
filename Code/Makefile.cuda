@@ -1,0 +1,23 @@
+COMMON=res/cuda/Common.cu res/cuda/VectorMath.cu res/cuda/Voxelize.cu
+
+all: bin/intermediates/VoxelizeRLV.ptx bin/intermediates/VoxelizeILV.ptx bin/intermediates/VoxelizeBresenham.ptx bin/intermediates/Compare.ptx
+clean:
+	rm bin/intermediates/*.ptx
+rebuild: clean all
+
+bin/intermediates/VoxelizeRLV.ptx: $(COMMON) res/cuda/VoxelizeRLV.cu 
+	nvcc --ptx res/cuda/Voxelize.cu -o bin/intermediates/VoxelizeRLV.ptx -D _RLV
+	nvcc --ptx res/cuda/Voxelize.cu -o bin/intermediates/VoxelizeRLV_comp.ptx -D _RLV -D _ERROR_ANALYSIS
+
+bin/intermediates/VoxelizeILV.ptx: $(COMMON) res/cuda/VoxelizeILV.cu res/cuda/VoxelizeInteger.cu 
+	nvcc --ptx res/cuda/Voxelize.cu -o bin/intermediates/VoxelizeILV.ptx -D _ILV
+	nvcc --ptx res/cuda/Voxelize.cu -o bin/intermediates/VoxelizeILV_comp.ptx -D _ILV -D _ERROR_ANALYSIS
+
+
+
+bin/intermediates/VoxelizeBresenham.ptx: $(COMMON) res/cuda/VoxelizeBresenham.cu res/cuda/VoxelizeInteger.cu 
+	nvcc --ptx res/cuda/Voxelize.cu -o bin/intermediates/VoxelizeBresenham.ptx -D _BRESENHAM
+	nvcc --ptx res/cuda/Voxelize.cu -o bin/intermediates/VoxelizeBresenham_comp.ptx -D _BRESENHAM -D _ERROR_ANALYSIS 
+
+bin/intermediates/Compare.ptx: res/cuda/Compare.cu
+	nvcc --ptx res/cuda/Compare.cu -o bin/intermediates/Compare.ptx

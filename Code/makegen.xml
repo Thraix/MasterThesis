@@ -1,0 +1,26 @@
+<makegen>
+  <configuration name="Release">
+    <cflag>-w</cflag>
+    <generatehfile>false</generatehfile>
+    <hfilename>Voxelizer.h</hfilename>
+    <includedir>src/engine/</includedir>
+    <includedir>ext/</includedir>
+    <includedir>/opt/cuda/include/</includedir>
+    <library>GL</library>
+    <library>GLEW</library>
+    <library>glfw</library>
+    <library>freeimage</library>
+    <library>freetype</library>
+    <library>cuda</library>
+    <library>cudart</library>
+    <librarydir>/opt/cuda/lib64/</librarydir>
+    <outputdir>bin/</outputdir>
+    <outputname>Voxelizer.a</outputname>
+    <outputtype>executable</outputtype>
+    <preargument>./scripts/compile_cuda.sh &amp;&amp;</preargument>
+    <projectname>Voxelizer</projectname>
+    <srcdir>src/</srcdir>
+  </configuration>
+  <target>Release</target>
+  <version>v1.3.0</version>
+</makegen>
