@@ -1,0 +1,121 @@
+\chapter{Background}\label{cha:theory}
+This chapter serves the purpose of giving the reader a better understanding of central concepts throughout the thesis.
+It will give an introduction to GPU-programming, AWS, voxelization and raycasting.
+
+\section{GPU-Programming}
+In GPU-programming, there are two different subjects to discuss, rendering and computing.
+Rendering is where the GPU performs calculations, which results in some visual output.
+This most often means taking triangles, performing different transformations on them and then drawing them to a screen.
+Computing is similar, but instead of resulting in graphics on a screen, the results are stored in video memory as data.
+This is useful when algorithms can make use of the GPU's parallelization.
+
+In order for the GPU to do any form of calculations, an API is needed to interact with it.
+For rendering, there are API:s such as OpenGL, DirectX and Vulkan.
+API:s used for computing include CUDA and OpenCL.
+All the rendering API:s above also support computing, but it is not what their general use is.
+
+The chosen API:s for this thesis were OpenGL and CUDA, and are presented in the next sections.
+
+\newpage
+
+\subsection{OpenGL}
+\textit{OpenGL}~\cite{opengl-about}, short for Open Graphics Library, is technically not an API but an open specification which defines functions used for 2D and 3D graphics.
+As it is a specification, there are implementations for most platforms, including Windows, Linux, MacOS\footnote{OpenGL is currently deprecated (but still works) on Apple devices in favor of Metal~\cite{macos-opengl,ios-opengl}\label{fn:apple-depricated}}, Android and iOS\footref{fn:apple-depricated}.
+
+To render with OpenGL, shaders are used to transform and color primitives, such as triangles.
+The shaders are, in a sense, programs which are executed on the GPU.
+When rendering a model, the GPU can run these shaders in parallel either per vertex, triangle or pixel, depending on the shader.
+These are coded in GLSL, which supplies the developer with a wide range of vector math functions. 
+
+OpenGL requires two shader programs in order to operate, the vertex and fragment shader.
+The input to the vertex shader is, of course, vertices.
+Often these vertices contain a position, normal and texture coordinate, and define a corner of a triangle.
+The vertex shader then performs transformations on the vertices in order to move or in any way alter the triangles.
+The result is then sent to a rasterizer, which turns these triangles into fragments.
+These fragments are then the input of the fragment shader.
+In simplest terms, fragments are pixels on the screen before they have been processed by the fragment shader.
+The fragment shader is then able to perform calculations which changes the color of the fragment.
+This can be based on normals, light positions, distance to the camera, etc.
+The resulting color is then the color of the pixel on the screen.
+
+There are two more programmable shaders in OpenGL, tessellation and geometry.
+These are not required to render to the screen and will therefore not be discussed further in this thesis.
+
+\subsection{CUDA}
+\textit{CUDA} is an API for performing general computing on a GPU.
+This API is being developed by NVIDIA and is only available on NVIDIA GPU:s.
+However, it is cross-platform in terms of operating systems, as it is supported on Windows, Linux and MacOS.
+
+CUDA is designed as a C/C++ extension and compiles using \textit{NVIDIA CUDA Compiler} (NVCC).
+This compiler in turn makes use of a host compiler (such as g++) in order to compile the C/C++ code~\cite{nvcc}.
+As such, there should not be any performance difference in the CPU code by using NVCC.
+
+CUDA also has two different API:s which the developer can interact with, the driver and the runtime API.
+The difference between them is minor, runtime CUDA is higher-level and is able to link the CUDA kernels into the compiled executable.
+Kernels are basically CUDA programs, much like shaders are OpenGL programs.
+The driver API on the other hand is lower-level and requires the program to read the CUDA kernels from an externally compiled cuda binary.
+
+\newpage
+
+\section{Amazon Web Service}\label{s:aws}
+AWS~\cite{aws} is a set of cloud computing services provided by Amazon.
+These services can provide the user with GPU computing, database management, cloud storage and many more services.
+
+To interact with these services the protocol SSh is used.
+This provides a way of connecting to a server with a terminal interface.
+A problem with this, for the thesis, is that rendering is required to test the voxelization results.
+In order to get a graphical interface on an AWS, Thinlinc~\cite{thinlinc} was used.
+ThinLinc is a software which runs a desktop environment on a server and transfers the display over a network.
+However, ThinLinc in itself does not support 3D hardware acceleration, which is needed by OpenGL.
+As such, VirtualGL~\cite{virtualgl} was used when running the voxelization over ThinLinc.
+This enables ThinLinc to run OpenGL with 3D hardware acceleration.
+To run a program with VirtualGL simply prepend the program with \texttt{vglrun}.
+For example, run \texttt{vglrun glxgears} to run the Linux GLX demo in ThinLinc.
+
+\section{Voxelization}
+In 2D, the process of turning triangles and other geometrical shapes into pixels is called \textit{rasterization}. 
+Rasterization is required to render shapes onto a screen, as monitors cannot handle continuous shapes and have to discretize them into pixels.
+An example of rasterization can be seen in \figref{fig:rasterization}.
+Voxelization is the 3D version of rasterization, where instead of marking pixels in a 2D plane, it marks voxels in a 3D space.
+Recall that a voxel can store any form of data, be it color, material or density.
+What is stored is dependent on the use case of the voxels. 
+In this thesis, only occupancy is stored, that is if the voxel exists or not.
+
+\input{fig/rasterization.fig}
+
+With voxelization defined there are two other topics that need discussing.
+The first of which is if the algorithm supports surface or solid voxelization.
+\textit{Surface voxelization} means the algorithm only voxelizes the outer surface of the model, and therefore leaves the voxelization with an empty interior.
+\textit{Solid voxelization} is the opposite of that, filling the interior with voxels.
+In this thesis, only surface voxelization will be considered, due to the optimal scanline only supporting it.
+
+The other topic is the \textit{connectivity} of the voxelization.
+There are three types of connectivity in a 3D voxelization, 6-, 18- and 26-connected.
+The number signifies how many possibilities there are for two voxels to be considered connected.
+A 2D example is seen in \figref{fig:connectivity}, where it is either 4- or 8-connected.
+Similarly in 3D, two voxels are 26-connected if they share either a face, an edge or a corner between them.
+Two voxels are 18-connected if they share a face or an edge between them.
+Finally, two voxels are 6-connected if they share a face between them.
+The authors of the optimal scanline claim the method can produce any voxelization connectivity, but mainly focuses on 6-connected. However, for the scanlines to work, 6-connected line voxelization is required.
+
+\input{fig/connectivity.fig}
+
+\section{Raycasting}
+\textit{Raycasting} is a rendering technique where lines, often called rays, are being sent out from the camera.
+If these rays intersect with an object in the world, that part of the object should be visible on the screen.
+Information such as color, depth and material of the object can be retrieved by looking at where the ray intersected.
+
+An early example of raycasting is its use in Wolfenstein 3D~\cite{wolf3d}.
+In this game, a ray is being sent out for each column of the screen.
+If a ray hits a wall, the game renders a vertical line with the height depending on the distance to the wall.
+The color of the pixels in the line is then dependent on the texture of the wall.
+
+Nowadays, raycasting can be performed for each pixel on the screen.
+That is, for each pixel, send out a ray from the camera and color the pixel depending on what its ray intersects with.
+As such, there is no need to perform any mesh rendering and only objects that are visible are being rendered.
+For some use cases, this might be an optimal solution.
+It is however an expensive operation if the use case is to render highly detailed triangle meshes, since it is difficult to find which triangle the ray intersects with.
+This is because there are potentially thousands of triangles per model and millions of rays to test. 
+Cases where raycasting is better to use are voxel grids, as there are algorithms to traverse it without evaluating every voxel.
+One such technique is called \textit{raymarching} which marches through all voxels the ray goes through.
+This is then terminated when a voxel is found or when the ray exits the scene.

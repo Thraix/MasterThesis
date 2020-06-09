@@ -1,0 +1,46 @@
+\chapter{Conclusion}\label{cha:conclusion}
+This chapter answers the research questions by summarizing the results and discussions.
+It also gives a conclusive answer as to which algorithm one should use when implementing an optimal scanline algorithm.
+
+\section{Research Questions}
+The research questions presented in the introduction are reiterated and answered in the following paragraphs.
+
+\begin{enumerate}
+\item Which line voxelization algorithm performs best for the optimal scanline? 
+\end{enumerate}
+For all models and voxel grid resolution, the floating-point version, RLV, performed better.
+ILV performed anywhere between 20-250\% worse compared to RLV.
+Bresenham performed anywhere between 20-500\% worse compared to RLV.
+Interestingly, ILV performed better than Bresenham in every case but two.
+Although, the difference was not as dramatic as between RLV and ILV, except for a few outliers which performed way worse.
+
+The reason for the big difference between the floating-point and integer versions was due to the complexity of finding the scanline endpoints.
+For RLV, it was simply a case of increasing the length of the scanline direction and performing a reverse projection of the direction to the triangle's edges.
+For ILV and Bresenham, finding the endpoints required iterating through the edge voxelizations and performing a boundary test based on the previous scanline and the current voxel.
+
+The reason for ILV being faster than Bresenham had less to do with Bresenham being worse in general.
+It had more to do with Bresenham not being able to step the line voxelization by one voxel each iteration.
+This in turn required extra overhead to overcome.
+
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item How great is the approximation error of the integer versions of the optimal scanline?
+\end{enumerate}
+The error for the integer versions of the optimal scanline was determined to be around 20-25\%.
+This was based on the Jaccard distance between RLV and ILV/Bresenham.
+One outlier of the data was the dragon model, with 871414 triangles, where the error started at around 9\% for a voxel grid resolution of 128.
+It however gradually grew as the resolution increased.
+The reason was likely due to the triangles of the model being mostly within a single or a few voxels.
+Making it less likely to cause an error.
+
+There also turned out to be a minor error ($\sim$5\%) between ILV and Bresenham, even though they both used the same underlying algorithm.
+This was caused due to cases where the scanline passes through multiple voxels, such that the choice of voxel was ambiguous.
+An example of this was shown in \figref{fig:ilv-bresen-error}.
+
+\section{Choice of Algorithm}
+From the results given there is only one obvious choice as to which algorithm one should use.
+This is of course the floating-point version using RLV.
+The algorithm had the best performance in terms of runtime.
+It is also closer to the ground truth, as it only voxelizes voxels touching the triangle.
+Due to approximation errors, this is not the case for the integer versions.
+Given those results, there should be no reason not to choose RLV.

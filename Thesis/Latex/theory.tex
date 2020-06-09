@@ -1,0 +1,257 @@
+\chapter{Theory}\label{cha:theory}
+This chapter presents the literature used in order to answer the research questions.
+It starts off with defining line voxelization and the three algorithms used.
+Then the optimal scanline is presented together with other voxelization techniques.
+Finally, some error metrics are presented, one of which is used as part of the final results.
+
+\section{Line Voxelization}
+\textit{Line voxelization} is a way of generating voxels based on a 3D line.
+This is needed for the optimal scanline method to work, as this is how the scanlines are generated. 
+In this thesis, line voxelization defines all voxels in a grid being touched by a line. 
+This is similar to how lines are drawn to a screen in 2D.
+An example of line voxelization can be seen in \figref{fig:line-voxelization}.
+To determine which voxels are touching the line, three algorithms are introduced in the upcoming sections. 
+
+\input{fig/line-voxelization.fig}
+
+\newpage
+
+\subsection{Real Line Voxelization}
+\call{voxeltraversal} proposed a method of ray marching voxels in a uniform grid. 
+This can also be used to voxelize lines and will further be called \textit{Real Line Voxelization} (RLV).
+The basis of the algorithm is the line equation
+$$p = p_0 + vt,$$
+where $p$ is a position on the line, $p_0$ is the start position of the line, $v$ is the direction of the line (normalized) and $t$ is how much the direction is scaled.
+
+When the algorithm starts, it initializes $t$ as
+$$t_x = \frac{p_{1,x} - p_{0,x}}{v_x},$$
+where $p_{1,x}$ is the x-position of the next voxel in the x-axis, as seen in \figref{fig:next-voxel}.
+This is calculated similarly for each component of $t$.
+Each iteration of the algorithm evaluates $t_{min}$ as $min(t_x,t_y,t_z)$.
+Let's assume $t_{min} = t_x$.
+This means the next voxel is in the x-direction.
+Again, from \figref{fig:next-voxel}, $p_{1,x}$ is closer to $p_0$ compared to $p_{1,y}$ and therefore has a smaller $t$ value.
+This means the next voxel would be placed to the right of $p_0$.
+The $t$ for the next iteration is calculated by subtracting all of its components by $t_{min}$.
+
+Finally assign 
+$$t_x = \frac{|p_{i,x} - p_{i-1,x}|}{v_x} = \frac{1}{v_x},$$
+where $p_{i,x}$ is the x-position of the $i$'th voxel in the x-direction.
+Here the grid is assumed to have a voxel size of 1, meaning $|p_{i,x} - p_{i-1,x}| = 1$.
+After this the iteration is restarted.
+The iteration is then terminated when the sum of all $t_{min}$ exceeds the length of the line.
+
+\input{fig/next-voxel.fig}
+
+\newpage
+
+\subsection{Integer Line Voxelization}
+\textit{Integer Line Voxelization} (ILV) follows the same structure as RLV except it avoids the floating-point arithmetics and divisions.
+The changes needed to avoid floating-points are adapted from \call{scanline-voxelization}.
+
+Having RLV as a basis, ILV requires three changes.
+Firstly, the initial $t$ is calculated from the center of the start voxel, which means 
+$$p_{1,x} - p_{0,x} = \frac{1}{2},$$
+and therefore
+\begin{equation*}
+\left\{
+\begin{aligned}
+    t_x &= \frac{1}{2 \Delta X} \\
+    t_y &= \frac{1}{2 \Delta Y} \\
+    t_z &= \frac{1}{2 \Delta Z}
+\end{aligned}
+\right.
+,
+\end{equation*}
+where $\Delta X$ denotes the length of the line in the x-axis.
+$\Delta Y$ and $\Delta Z$ are defined similarly.
+
+Secondly, since only the relative sizes of $t$'s components are needed, the equation can therefore be multiplied with 
+$$2 \Delta X\Delta Y\Delta Z,$$
+to avoid fractions.
+As such, the integer version of $t_x$ is denoted $T_x$ and can be described as
+\begin{equation}\label{eq:Tx}
+  T_x = \Delta Y\Delta Z.
+\end{equation}
+$T_y$ and $T_z$ are described similarly.
+
+Lastly, the iteration of the algorithm follows RLV, replacing $t$ with $T$, but the assignment to $t_x$ in the end is instead 
+$$T_x = 2 \Delta Y\Delta Z,$$
+if $T_{min} = T_x$.
+This follows \equref{eq:Tx}, but multiplied with 2.
+The reason is that before $T$ was calculated to traverse half a voxel, multiplying it by 2 then traverses a whole voxel.
+
+\subsection{3D Bresenham Algorithm}
+The 3D version of the \textit{Bresenham} algorithm presented by \call{3d-bresenham} follows the original by \call{bresenham} rather nicely.
+The 3D algorithm starts off with a few assumptions about the line,
+$\Delta X \ge \Delta Y \ge 0$ and $\Delta X \ge \Delta Z \ge 0$, these are defined the same as in the previous section.
+
+In the original Bresenham an error in the y-axis is initialized to
+$$e_y = 2 \Delta Y - \Delta X.$$
+Then for each iteration, if the current $x$ is greater than $X_1$, terminate the iteration.
+Otherwise set the current voxel and increment $x$ by one.
+Following that, check if the error of the line is greater than 0.
+If it is, increase $y$ by one and decrease the error, otherwise increase the error.
+Then restart the loop.
+The change in the error is defined as
+
+\begin{equation*}
+\left\{
+\begin{aligned}
+  e'_y &= e_y + 2 (\Delta Y - \Delta X) &, e_y \ge 0\\
+  e'_y &= e_y + 2 \Delta Y &, e_y < 0 \\
+\end{aligned}
+\right.
+.
+\end{equation*}
+
+To extend the algorithm to 3D, \citeauthor{3d-bresenham} added another error, $e_z$, which kept track of when $z$ should increase.
+This works the same way as $e_y$ and is evaluated after $e_y$.
+A pseudo code of the algorithm can be found in \appref{app:3dbresen}.
+
+\section{Model Voxelization}
+As mentioned in the introduction, voxelization is a way of turning a 3D model or scene into voxel data.
+This can be done in a wide range of ways and is still being researched today.
+Four such techniques, two of which are based on the optimal scanline, are presented in the following sections.
+
+\subsection{Floating-Point Optimal Scanline}\label{sss:vox_optscan}
+One of the more recent works in voxelization include work done by \call{scanline-voxelization}.
+This algorithm, called optimal scanline, uses line voxelization as its core concept.
+All its calculations are done for each triangle of the model.
+The algorithm first sorts the vertices of a triangle based on its most dominant axis.
+This axis is defined as the x-, y- or z-axis which most aligns with the triangle's normal.
+It can be determined by choosing the axis with the greatest absolute value of the normal's components.
+That is, choose the axis which matches $max(|n_x|, |n_y|, |n_z|)$, where $n$ is the normal of the triangle.
+The dominant axis will further be assumed to be the z-axis.
+
+With the vertices of the triangle sorted, it performs line voxelizations between each of the vertices using RLV.
+This results in all the edges of the triangle being voxelized.
+
+In order to fill the interior of the triangle, it splits the edges into slices in the z-axis.
+Where each edge has the same integer z-value.
+Then, for each slice, perform 2D line voxelization between the edges of the triangle.
+This is shown in \figref{fig:real-optimal-scanline}.
+The figure also shows that not every edge voxel needs to contain a scanline endpoint.
+That is where the optimal keyword of the algorithm comes in.
+The authors propose a theorem stating that, there exists a distance, $l$, where there cannot exist a voxel between two parallel lines.
+This distance can be seen in \figref{fig:scanline-distance}.
+Intuitively, the distance can be seen to be the length of the voxel's diagonal projected onto the scanline direction, $d_{sl}$.
+Furthermore, the length, $l$, can be calculated as $|d_{sl,x}| + |d_{sl,y}|$.
+To prove this the scanline can be classified into four cases, all the combination of the signs of $d_{sl}$. The result is the four following equations:
+\begin{equation*}
+\left\{
+\begin{aligned}
+  l &= ((0,1) - (1,0)) \cdot d_{sl}\hspace{1cm},d_{sl,x} < 0 < d_{sl,y}\\
+  l &= ((1,0) - (0,1)) \cdot d_{sl}\hspace{1cm},d_{sl,y} < 0 < d_{sl,x}\\
+  l &= ((0,0) - (1,1)) \cdot d_{sl}\hspace{1cm},d_{sl,x}, d_{sl,y} < 0\\
+  l &= ((1,1) - (0,0)) \cdot d_{sl}\hspace{1cm},0 < d_{sl,x}, d_{sl,y}\\
+\end{aligned}
+\right.
+\end{equation*}
+The values $(0,0)$, $(1,1)$, $(1,0)$ and $(0,1)$ are the corners of the voxel.
+They are used to calculate the diagonal that aligns with $d_{sl}$.
+Calculating the dot product of each of the equations results in $l = |d_{sl,x}| + |d_{sl,y}|$.
+
+\input{fig/real-optimal-scanline.fig}
+\input{fig/scanline-distance.fig}
+
+\newpage
+
+\subsection{Integer Optimal Scanline}\label{ss:integer-optimal-scanline}
+The way integer voxelization of the optimal scanline is handled is a bit different from the floating-point one. 
+Since the scanline direction and the scanline length are both floating-points, these cannot be used.
+Instead, it makes use of an iterative approach, where it steps through the edge voxels of the triangle until the voxel is too far away from the previous scanline. 
+How exactly it was derived can be found in~\cite{scanline-voxelization}, but the final theory is presented below (assuming z is the most dominant axis).
+
+To start off, two boundary variables are defined, called $C_{lower}$ and $C_{upper}$.
+These are defined as
+\begin{equation*}
+  \left\{
+    \begin{aligned}
+      C_{lower} &= \Delta Y X^a - \Delta X Y^a - |\Delta X| - |\Delta Y|\\
+      C_{upper} &= \Delta Y X^a - \Delta X Y^a + |\Delta X| + |\Delta Y|
+    \end{aligned}
+  \right.,
+\end{equation*}
+where ($X^a$, $Y^a$) and ($X^b$, $Y^b$) are the endpoints of the previous scanline and $\Delta X = X^b - X^a$, $\Delta Y = Y^b - Y^a$.
+Each iteration, the algorithm steps the edge voxelization by one voxel and calculate a variable called $C_k$ to be
+$$ C_k = \Delta Y X_k - \Delta X Y_k, $$
+where ($X_k$, $Y_k$) is the k'th voxel on the edge, with k=0 being the previous scanline endpoint.
+If this variable is outside the boundaries, $C_{lower}$ and $C_{upper}$, the voxel is too far away from the previous scanline and $(X_{k-1},Y_{k-1})$ is chosen as the next scanline endpoint. 
+This iteration is performed separately for both the edges.
+As a triangle has three edges and not two, the voxels on the edge from $v_1$ to $v_2$ are merged with the voxels on the edge from $v_2$ to $v_3$.
+Those two edges are therefore counted as a single edge.
+
+\subsection{Rasterization}
+Another technique used for surface voxelization utilizes the GPU rasterizer in order to optimize the voxel generation.
+One such technique was presented by \call{octree-voxelization}.
+The basic idea is that, for every triangle in the model, find the triangle's most dominant axis and render it from that direction. 
+In practice, this means swapping the dominant axis with the z-axis in a vertex shader.
+The triangle is then sent to the rasterizer which outputs fragments of the triangle.
+The voxel coordinate is then simply the position of the fragment and its depth value.
+Then the axes are swapped back from before in order to place it correctly in the scene.
+Finally it writes the coordinate to a 3D texture which stores the voxel data.
+Note that all rasterization is done in a framebuffer with the same width and height as the voxel grid resolution.
+There are however problems with the algorithm creating holes in the voxelization in some instances.
+It can be resolved by using a technique called conservative rasterization.
+This involves marking all fragments which are touched by the triangle. 
+
+
+% \subsection{Triangle-Box Intersection}
+% Triangle-box intersection is another method of voxelization that was proposed by \call{SAT-voxelization}.
+% The main idea of the method is, as its name implies, performing intersection tests between the voxels and the triangles.
+% In order to minimize the amount of tests, a few optimizations are done.
+% The first of which is classifying the type of triangle it is, be it a 1D line, a 2D triangle or a 3D triangle.
+% These are further classified to their respective dominant axis.
+% All the triangles of the model are then sorted so that they are grouped in their classes. 
+% This makes it so that most of the GPU threads are performing the same tasks without branch divergence.
+% Another optimization is that a triangle has at most three voxel thickness in the most dominant axis.
+% This could reduce the amount of tests needed significantly.
+
+\newpage
+
+\subsection{Depth Buffer}
+One way of performing solid voxelization is to make use of the depth buffer \cite{depth-buffer}.
+This is done by rendering the entire model from six different directions, positive x, y and z, and negative x, y and z.
+In these rendering steps, only the depth buffer is needed.
+Then the voxelization is defined as all voxels which are within all the depth buffers. 
+
+One way to do this, is to iterate through the entire grid and marking all voxels which are within the buffers as occupied.
+This is however rather slow for higher resolutions, as the complexity grows cubically.
+Another way would be to choose one axis, let's say the z-axis, and iterate through its buffer x- and y-coordinates.
+Then for each coordinate, there is a minimum and maximum z-position which is determined by the two depth buffers in the z-axis.
+This means the algorithm only needs to iterate through these two values instead of all the z-values.
+As most models do not fill the entire voxel grid, this reduces the runtime of the algorithm in the average case.
+
+One obvious problem of the algorithm is that it needs to render the object six times to voxelize it.
+For convex shapes, this can be reduced to two, as the shape can be fully described by rendering it from the front and back. 
+
+\section{Error Analysis}\label{s:error}
+Calculating the approximation errors can be done using several methods.
+The choice of method depends on the use case.
+This thesis presents two different methods to analyze the error.
+These are relative error, the one used in~\cite{scanline-voxelization}, and the Jaccard distance.
+
+\subsection{Relative Error}
+The \textit{relative error} can be described as
+\begin{equation*}
+  e_{re} = \frac{|x - y|}{|x|} = \Big|\frac{x - y}{x}\Big|,
+\end{equation*}
+where $x$ is the actual value and $y$ is the approximation.
+This was the method used by \call{scanline-voxelization}, where they set $x$ to the total voxel count of the floating-point version and $y$ to the total voxel count of the integer version.
+A problem with this is that if a voxel is moved to another location, the error would be considered 0.
+This can be seen in \figref{fig:relative-error}, where the relative error of the voxel count is 0.
+Therefore, a different error metric is required in order to describe this error.
+
+\input{fig/relative-error.fig}
+
+\newpage
+
+\subsection{Jaccard Distance}\label{ss:mae}
+The \textit{Jaccard distance} is an error metric which aims to measure differences in sets.
+It is derived from  the Jaccard similarity presented in \cite{jaccard}, where it instead measures how similar two sets are.
+The Jaccard similarity is defined as the size of the intersection divided by the size of the union of the two sets.
+This results in a value between zero and one, which can be interpreted as a percentage of how similar two sets are.
+The Jaccard distance is defined as one subtracted by the Jaccard similarity.
+It can also be defined as the symmetric difference divided by the union of the two sets.
+Both of which are equivalent.

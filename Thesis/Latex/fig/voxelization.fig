@@ -1,0 +1,19 @@
+\newcommand*{\voxelizationfig}[4]
+{
+  \begin{figure}[htpb]
+    \centering
+    \includegraphics[width=0.27\textwidth]{fig/voxelization/#1/#1_#2_16}
+    \hspace{0.25cm}
+    \includegraphics[width=0.27\textwidth]{fig/voxelization/#1/#1_#2_32}
+    \hspace{0.25cm}
+    \includegraphics[width=0.27\textwidth]{fig/voxelization/#1/#1_#2_64}
+    \vspace{0.15cm}
+
+    \includegraphics[width=0.27\textwidth]{fig/voxelization/#1/#1_#2_128}
+    \hspace{0.25cm}
+    \includegraphics[width=0.27\textwidth]{fig/voxelization/#1/#1_#2_256}
+    \hspace{0.25cm}
+    \includegraphics[width=0.27\textwidth]{fig/voxelization/#1/#1_#2_512}
+    \caption{#3}\label{#4}
+  \end{figure}
+}

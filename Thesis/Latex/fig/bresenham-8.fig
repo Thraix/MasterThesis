@@ -1,0 +1,22 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.4]
+
+\tikzvoxel{0}{0}{line-color}
+\tikzvoxel{1}{0}{line-color}
+\tikzvoxel{2}{1}{line-color}
+\tikzvoxel{3}{1}{line-color}
+\tikzvoxel{4}{2}{line-color}
+\tikzvoxel{5}{2}{line-color}
+\tikzvoxel{6}{2}{line-color}
+\tikzvoxel{7}{3}{line-color}
+\tikzvoxel{8}{3}{line-color}
+\tikzvoxel{9}{4}{line-color}
+\tikzvoxel{10}{4}{line-color}
+
+% \tikzgrid{7}{8}
+
+\draw[black, thick] (0.5,0.5) -- (10.5,4.5);
+\end{tikzpicture}
+\caption{Original Bresenham algorithm which does not voxelize all voxels touching the line}\label{fig:bresenham-4}
+\end{figure}

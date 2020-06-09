@@ -1,0 +1,17 @@
+\begin{figure}[h]
+\centering
+  \includegraphics[width=0.2\textwidth]{fig/voxelization/bunny/bunny_bresenham_16}
+  \hspace{0.25cm}
+  \includegraphics[width=0.2\textwidth]{fig/voxelization/bunny/bunny_bresenham_32}
+  \hspace{0.25cm}
+  \includegraphics[width=0.2\textwidth]{fig/voxelization/bunny/bunny_bresenham_64}
+
+  \vspace{0.15cm}
+
+  \includegraphics[width=0.2\textwidth]{fig/voxelization/bunny/bunny_bresenham_128}
+  \hspace{0.25cm}
+  \includegraphics[width=0.2\textwidth]{fig/voxelization/bunny/bunny_bresenham_256}
+  \hspace{0.25cm}
+  \includegraphics[width=0.2\textwidth]{fig/voxelization/bunny/bunny_bresenham_512}
+  \caption{Integer voxelization using Bresenham of the Stanford bunny at 16, 32, 64, 128, 256 and 512 resolution}\label{fig:voxelization-bresenham}
+\end{figure}

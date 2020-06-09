@@ -1,0 +1,27 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.5]
+
+\tikzvoxel{0}{0}{scanline-color}
+\tikzvoxel{1}{0}{scanline-color}
+\tikzvoxel{2}{1}{scanline-color}
+\tikzvoxel{3}{1}{scanline-color}
+\tikzvoxel{4}{1}{scanline-color}
+\tikzvoxel{5}{2}{scanline-color}
+\tikzvoxel{6}{2}{scanline-color}
+
+\tikzvoxel{5}{1}{line-color}
+\tikzvoxel{2}{0}{line-color}
+
+\tikzvoxel{4}{2}{white}
+\tikzvoxel{1}{1}{white}
+                
+% \tikzvoxel{2}{1}{scanline-color}
+
+% \tikzgrid{7}{8}
+
+\draw[black, thick] (0.5,0.5) -- (6.5,2.5);
+
+\end{tikzpicture}
+\caption{Line touching the corner of four voxels. This causes ambiguity in wether the dark gray or the white voxel should be voxelized.}\label{fig:ilv-bresen-error}
+\end{figure}

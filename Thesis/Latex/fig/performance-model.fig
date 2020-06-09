@@ -1,0 +1,129 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.95]
+\begin{axis}[
+    title={Blender monkey},
+    xlabel={Resolution},
+    ylabel={Time [ms]},
+    xmode = log,
+    log2x,
+    ymode = log,
+    log basis x={2},
+    xmin=128, xmax=2048,
+    ymin=0.1, ymax=100,
+    xtick={128,256,512,1024,2048},
+    legend pos=north west,
+    ymajorgrids=true,
+    grid style=dashed,
+    scale=0.6,
+    legend style={nodes={scale=0.7, transform shape}}
+]
+
+\addplot[
+  color=blue,mark=o,
+  ]
+  coordinates {
+    (128,0.168047)(256,0.360608)(512,1.17848)(1024,4.18106)(2048,16.5649)
+  };
+\addplot[
+  color=red,mark=square,
+  ]
+  coordinates {
+    (128,0.213802)(256,0.576965)(512,1.84135)(1024,5.96018)(2048,21.9102)
+  };
+\addplot[
+  color=green,mark=triangle,
+  ]
+  coordinates {
+    (128,0.24961)(256,0.636628)(512,1.86863)(1024,5.72366)(2048,19.9131)
+  };
+
+\legend{RLV,ILV, Bresenham}
+    
+\end{axis}
+\end{tikzpicture}
+\begin{tikzpicture}[scale=0.95]
+\begin{axis}[
+    title={Stanford bunny},
+    xlabel={Resolution},
+    ylabel={Time [ms]},
+    xmode = log,
+    log2x,
+    ymode = log,
+    log basis x={2},
+    xmin=128, xmax=2048,
+    ymin=0.1, ymax=100,
+    xtick={128,256,512,1024,2048},
+    legend pos=south east,
+    ymajorgrids=true,
+    grid style=dashed,
+    scale=0.6,
+    legend style={nodes={scale=0.7, transform shape}}
+]
+
+\addplot[
+  color=blue,mark=o
+  ]
+  coordinates {
+    (128,0.193737)(256,0.369392)(512,1.76889)(1024,6.86508)(2048,21.5765)
+  };
+\addplot[
+  color=red,mark=square
+  ]
+  coordinates {
+    (128,0.602098)(256,1.22562)(512,3.29431)(1024,9.25156)(2048,27.0328)
+  };
+\addplot[
+  color=green,mark=triangle
+  ]
+  coordinates {
+    (128,0.988574)(256,1.92251)(512,4.5347)(1024,11.6089)(2048,31.9672)
+  };
+\legend{RLV,ILV, Bresenham}
+    
+\end{axis}
+\end{tikzpicture}
+\begin{tikzpicture}[scale=0.95]
+\begin{axis}[
+    title={Stanford dragon},
+    xlabel={Resolution},
+    ylabel={Time [ms]},
+    xmode = log,
+    log2x,
+    ymode = log,
+    log basis x={2},
+    xmin=128, xmax=2048,
+    ymin=0.1, ymax=100,
+    xtick={128,256,512,1024,2048},
+    legend pos=south east,
+    ymajorgrids=true,
+    grid style=dashed,
+    scale=0.6,
+    legend style={nodes={scale=0.7, transform shape}}
+]
+
+\addplot[
+  color=blue,mark=o,
+  ]
+  coordinates {
+    (128,1.22597)(256,1.50882)(512,2.32364)(1024,4.89038)(2048,18.1659)
+  };
+\addplot[
+  color=red,mark=square,
+  ]
+  coordinates {
+    (128,3.86642)(256,5.36262)(512,8.12676)(1024,16.3983)(2048,42.3611)
+  };
+\addplot[
+  color=green,mark=triangle,
+  ]
+  coordinates {
+    (128,6.71438)(256,9.32611)(512,13.8366)(1024,26.5671)(2048,60.6166)
+  };
+
+\legend{RLV,ILV, Bresenham}
+    
+\end{axis}
+\end{tikzpicture}
+\caption{Performance of the voxelization for a model with different algorithms and resolutions}\label{fig:performance-model}
+\end{figure}

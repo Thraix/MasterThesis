@@ -1,0 +1,72 @@
+\chapter{Introduction}\label{cha:intro}
+This chapter gives the reader an introduction to voxels, its uses and ways to create voxels from a model.
+It also serves the purpose of motivating the thesis, as well as describing the problem it is out to solve.
+Finally, it defines the delimitations of the thesis and presents the company, at which this thesis was conducted at.
+
+\section{Background}
+In computer graphics, a 3D model is built up of triangles which describes the surface of the model.
+This means it does not store any information to represent the inside of the model.
+In order to represent the inside, a volumetric data structure is needed.
+Usually, this is done by storing \textit{voxels} in a uniform 3D grid.
+A voxel can be described as data at a position in a grid.
+This can be any form of data, such as occupancy, color, material or density.
+
+% \textit{Voxel} is a word that has a lot of meaning in computer graphics.
+% The simplest form of a voxel is a cube in a 3D-environment, but other representations of voxel data also exist.
+% One such representation is marching cubes~\cite{marching-cubes}, where voxels are defined as density functions to a surface.
+% This can create smooth surfaces from volume data, which has its uses in medical imaging~\cite{marching-cubes} and 3D-terrain~\cite{marching-cubes-terrain}.
+
+As voxels are just a way to represent volumetric data, they have been used in a wide range of applications, such as global illumination~\cite{crassin-VCT}, medical imaging~\cite{marching-cubes,voxel-medicin} and collision culling~\cite{voxel-collision}.
+These applications either store a voxel representation of models (especially true for medical imaging) or need to convert models into voxels.
+This process is called \textit{voxelization} and has been widely studied in the past.
+Some methods for voxelizations include triangle-box intersection~\cite{SAT-voxelization}, rasterization~\cite{octree-voxelization} and depth buffer~\cite{depth-buffer}.
+
+Recently, a study was published by \call{scanline-voxelization} proposing a new method to voxelize a model.
+The basics of the method is to voxelize the model by performing line voxelization at different stages.
+This method is the basis of this thesis and will further be called the \textit{optimal scanline}. 
+% The authors used both real and integer line voxelization based on~\call{voxeltraversal}.
+% These two will further be called \textit{Real Line Voxelization} (RLV) and \textit{Integer Line Voxelization} (ILV).
+% They mentioned ILV was slightly more efficient ($\sim$3\%), but the actual data was not published.
+
+\newpage
+
+\section{Aim}
+This thesis aims to do an investigation of how the line voxelization algorithm affects the performance of the optimal scanline.
+This includes both floating-point and integer line voxelizations.
+
+The thesis also investigates the approximation error caused by using the integer versions of the algorithm.
+This was done in \cite{scanline-voxelization}, but the authors only compared the voxel count.
+Which means if a voxel is moved somewhere else, it would not produce any error.
+As such, this thesis aims to measure this error in another metric, which can describe those errors.
+
+\section{Research Questions}
+With the aim of the thesis defined, two research questions are formed as a baseline of the thesis.
+These are presented below:
+\begin{enumerate}
+  \item \label{que:linealg} Which line voxelization algorithm performs best for the optimal scanline?
+  \item \label{que:erroraprox} How great is the approximation error of the integer versions of the optimal scanline?
+  % \item \label{que:combine} Can the different line voxelization be combined to improve performance and accuracy?
+\end{enumerate}
+A better performance in this case is defined as how fast the execution of the voxelization is.
+It is not a metric of the error or the memory usage of the algorithms.
+
+\section{Delimitations}
+The implementation of the thesis ran on \textit{Amazon Web Services} (AWS), on a computer running Ubuntu 18.04 with an NVIDIA Tesla T4 graphics card with driver version 440.59.
+
+The rendering of the voxelization was done using OpenGL.
+As the focus was not on supporting older devices, the OpenGL version 4.6 was used.
+
+The computing language of choice was CUDA, as such, other languages were not considered for the implementation.
+Again, as there is no need to support older devices, CUDA 10.2 was used.
+
+The line algorithms that were evaluated were limited to a voxel traversal algorithm by \call{voxeltraversal}, its integer version and Bresenham.
+As Bresenham is predominantly a 2D line drawing algorithm, it was extended to 3D using a method proposed by \call{3d-bresenham}.
+
+The evaluations were also limited to three different models and voxel grid resolutions between 128-2048.
+
+\newpage
+
+\section{Mindroad}
+This master thesis was conducted on behalf of MindRoad. 
+MindRoad is a software company which specializes in embedded systems, web development and mobile applications. 
+They also provide courses in software development, such as C++, Python, GPU-programming, Linux and driver development. 

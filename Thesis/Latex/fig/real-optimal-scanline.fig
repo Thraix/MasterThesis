@@ -1,0 +1,87 @@
+% \definecolor{line-color}{rgb}{0.13,0.22,0.26}
+% \definecolor{scanline-color}{rgb}{0.77, 0.63, 0.35}
+\newcommand*{\figcommon}{
+% left line voxelization
+  \tikzvoxel{1}{1}{line-color}
+  \tikzvoxel{1}{2}{line-color}
+  \tikzvoxel{2}{2}{line-color}
+  \tikzvoxel{2}{3}{line-color}
+  \tikzvoxel{2}{4}{line-color}
+  \tikzvoxel{3}{4}{line-color}
+  \tikzvoxel{3}{5}{line-color}
+
+% right line voxelization
+  \tikzvoxel{8}{1}{line-color}
+  \tikzvoxel{8}{2}{line-color}
+  \tikzvoxel{8}{3}{line-color}
+  \tikzvoxel{7}{3}{line-color}
+  \tikzvoxel{7}{4}{line-color}
+  \tikzvoxel{7}{5}{line-color}
+
+ % Grid
+ % \tikzgrid{10}{7}
+
+% right line 
+\draw [dashed,black] (0.7842105263157894,0) -- (1.4,1.3);
+\draw [thick, black] (1.4,1.3) -- (3.2,5.1);
+\draw [dashed,black] (4.1000000000000005,7) -- (3.2,5.1);
+
+% left line
+\draw [dashed,black] (8.52857142857143,0) -- (8.3,1.6);
+\draw [thick, black] (8.3,1.6) -- (7.771604938271605,5.298765432098765);
+\draw [dashed,black] (7.5285714285714285,7) -- (7.771604938271605,5.298765432098765);
+
+% left line endpoints
+\fill [black] (1.4,1.3) circle (0.8mm);
+\fill [black] (3.2,5.1) circle (0.8mm);
+
+% right line endpoints
+\fill [black] (8.3,1.6) circle (0.8mm);
+\fill [black] (7.771604938271605,5.298765432098765) circle (0.8mm);
+}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[scale=0.65]
+\figcommon
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[scale=0.65]
+% Scanline voxelization
+  \tikzvoxel{2}{1}{scanline-color}
+  \tikzvoxel{3}{1}{scanline-color}
+  \tikzvoxel{4}{1}{scanline-color}
+  \tikzvoxel{5}{1}{scanline-color}
+  \tikzvoxel{6}{1}{scanline-color}
+  \tikzvoxel{7}{1}{scanline-color}
+
+  \tikzvoxel{3}{2}{scanline-color}
+  \tikzvoxel{4}{2}{scanline-color}
+  \tikzvoxel{5}{2}{scanline-color}
+  \tikzvoxel{6}{2}{scanline-color}
+  \tikzvoxel{7}{2}{scanline-color}
+
+  \tikzvoxel{3}{3}{scanline-color}
+  \tikzvoxel{4}{3}{scanline-color}
+  \tikzvoxel{5}{3}{scanline-color}
+  \tikzvoxel{6}{3}{scanline-color}
+
+  \tikzvoxel{4}{4}{scanline-color}
+  \tikzvoxel{5}{4}{scanline-color}
+  \tikzvoxel{6}{4}{scanline-color}
+
+  \tikzvoxel{4}{5}{scanline-color}
+  \tikzvoxel{5}{5}{scanline-color}
+  \tikzvoxel{6}{5}{scanline-color}
+\figcommon
+
+% Scanlines
+\draw [thick, black] (1.4,1.3) -- (8.3,1.6);
+\draw [thick, black] (1.9046728971962619,2.3654205607476637) -- (8.151851851851852,2.637037037037037);
+\draw [thick, black] (2.4093457943925234,3.4308411214953276) -- (8.003703703703703,3.674074074074074);
+\draw [thick, black] (2.9140186915887853,4.496261682242991) -- (7.855555555555556,4.71111111111111);
+\draw [thick, black] (3.2,5.1) -- (7.771604938271605,5.298765432098765);
+
+\end{tikzpicture}
+\caption{Left figure shows a slice of the edges of the triangle together with its voxelization shown in gray. The right figure shows how the optimal scanlines are chosen and the resulting voxelization in light gray.}
+\label{fig:real-optimal-scanline}
+\end{figure}

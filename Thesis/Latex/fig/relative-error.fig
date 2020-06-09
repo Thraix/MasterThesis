@@ -1,0 +1,30 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.5]
+
+\tikzvoxel{0}{0}{line-color}
+\tikzvoxel{1}{0}{scanline-color}
+\tikzvoxel{2}{0}{scanline-color}
+\tikzvoxel{2}{1}{line-color}
+\tikzvoxel{3}{1}{line-color}
+\tikzvoxel{4}{1}{scanline-color}
+\tikzvoxel{5}{1}{scanline-color}
+\tikzvoxel{5}{2}{line-color}
+\tikzvoxel{6}{2}{line-color}
+
+\tikzvoxel{0}{1}{white}
+\tikzvoxel{1}{1}{white}
+
+\tikzvoxel{3}{2}{white}
+\tikzvoxel{4}{2}{white}
+                
+% \tikzvoxel{2}{1}{scanline-color}
+
+% \tikzgrid{7}{8}
+
+\draw[black, thick] (0.5,0.5) -- (6.5,2.5);
+\draw[black, thick] (0.5,0.9) -- (6.5,2.9);
+
+\end{tikzpicture}
+\caption{Difference between RLV and ILV. White voxels are only in RLV, gray voxels are only in ILV and the dark gray voxels are in both. The voxel count is the same for both.}\label{fig:relative-error}
+\end{figure}

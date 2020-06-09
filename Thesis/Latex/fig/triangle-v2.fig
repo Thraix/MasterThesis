@@ -1,0 +1,26 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=2,rotate=30]
+\coordinate (v1) at (0,0);
+\coordinate (v2) at (0.3,1);
+\coordinate (v3) at (0.8,0.5);
+\coordinate (sld) at (0.8,0.2);
+\coordinate (v2new) at (-0.43333333, 1.73333333);
+
+\fill [black] (v1) circle (0.2mm);
+\fill [black] (v2) circle (0.2mm);
+\fill [black] (v3) circle (0.2mm);
+\fill [black] (v2new) circle (0.2mm);
+\draw (v1) -- (v2) -- (v3) -- cycle;
+\draw[dashed] (v2) -- (v2new);
+\draw[dashed] (v1) -- (v2new) node[above] at (v2new) {$v^\prime_2$};
+\draw[arrows=->] (v1) -- (sld) node[right] at (sld) {$d_{sl}$};
+\draw (-0.03233808, 0.129352337) -- (0.09701425, 0.16169042);
+\draw (0.12935233, 0.03233808) -- (0.09701425, 0.16169042);
+
+\node[below] at (v1) {$v_1$};
+\node[above] at (v2) {$v_2$};
+\node[above] at (v3) {$v_3$};
+\end{tikzpicture}
+\caption{$v^\prime_2$ is calculated by finding the intersection between the edge's line and the perpendicular line of $d_{sl}$}\label{fig:triangle-v2}
+\end{figure}

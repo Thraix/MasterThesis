@@ -1,0 +1,27 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.5]
+
+\tikzvoxel{0}{0}{line-color}
+\node[below] at (0.5,0) {$(X_1, Y_1)$};
+
+\tikzvoxel{6}{1}{line-color}
+\node[below] at (6.5,1) {$(X_2, Y_2)$};
+
+% Scanline
+\draw[black] (0.5,0.5) -- (6.5,1.5);
+
+\tikzvoxel{0}{1}{line-color}
+\tikzvoxel{1}{1}{line-color}
+
+\tikzvoxel{6}{2}{line-color}
+\tikzvoxel{5}{2}{line-color}
+\tikzvoxel{5}{3}{line-color}
+\tikzvoxel{5}{4}{line-color}
+
+\tikzvoxel{1}{2}{scanline-color}
+\node[above] at (1.5,3) {$(X', Y')$};
+
+\end{tikzpicture}
+\caption{Dark gray rectangles shows the edge voxels of the triangle. The light gray shows the current voxel which is being evaluated.}\label{fig:integer-scanline}
+\end{figure}

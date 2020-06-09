@@ -1,0 +1,154 @@
+\chapter{Appendix}\label{cha:appendix}
+
+\section{3D Bresenham Algorithm}\label{app:3dbresen}
+\begin{algorithm}[H]
+  \caption{The Bresenham algorithm for calculating a straight line in 3D}
+  \SetAlgoLined
+  \DontPrintSemicolon
+  $e_y \leftarrow 2 \Delta Y - \Delta X$\;
+  $e_z \leftarrow 2 \Delta Z - \Delta X$\;
+  $x \leftarrow X_0$, $y \leftarrow Y_0$, $z \leftarrow Z_0$\;
+  \While{$x \le X_1$}
+  {
+    $voxel \leftarrow (x,y,z)$\;
+    SetVoxel($voxel$)\;
+    $x \leftarrow x + 1$\;
+    \eIf{$e_y \ge 0$}
+    {
+      $y \leftarrow y + 1$\;
+      $e_y \leftarrow e_y + 2(\Delta Y - \Delta X)$\;
+    }
+    {
+      $e_y \leftarrow e_y + 2\Delta Y$\;
+    }
+    \eIf{$e_z \ge 0$}
+    {
+      $z \leftarrow z + 1$\;
+      $e_z \leftarrow e_z + 2(\Delta Z - \Delta X)$\;
+    }
+    {
+      $e_z \leftarrow e_z + 2\Delta Z$\;
+    }
+  }
+\end{algorithm}
+
+\newpage
+
+\section{6-Connected Bresenham Algorithm Modification}\label{app:3dbresen-4}
+\begin{algorithm}[H]
+  \caption{Modification for the y-axis of the Bresenham algorithm to voxelize a 6-connected line. The same modification is done for the z-axis.}
+  \SetAlgoLined
+  \DontPrintSemicolon
+  \eIf{$e_y \ge 0$}
+  {
+    \eIf{$e_y \geq \Delta Y$}
+    {
+      $voxel \leftarrow (voxel.x, voxel.y+1, voxel.z)$\;
+    }
+    {
+      $voxel \leftarrow (x,y,z)$\;
+    }
+    SetVoxel($voxel$)\;
+    $y \leftarrow y + 1$\;
+    $e_y \leftarrow e_y + 2(\Delta Y - \Delta X)$\;
+  }
+  {
+    $e_y \leftarrow e_y + 2\Delta Y$\;
+  }
+\end{algorithm}
+
+\newpage
+
+\section{CUDA-OpenGL Interoperability}\label{app:cuda-opengl-inter}
+\begin{lstlisting}[language=C++]
+  // ================ DEVICE ================
+
+  surface<void, 3> voxelGrid;
+
+  __device__
+  void WriteToTexture(int3 voxel, unsigned char color)
+  {
+      surf3Dwrite(color, voxelGrid, voxel.x, voxel.y, voxel.z);
+  }
+
+  // ================= HOST =================
+
+  // Create OpenGL texture
+  glGenTextures(1, &glTex);
+  glBindTexture(GL_TEXTURE_3D, glTex);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, size, size, size, 0, GL_RED, GL_FLOAT, nullptr);
+
+  // Register the OpenGL texture as a CUDA texture
+  cuGraphicsGLRegisterImage(&cudaTex,  glTex, GL_TEXTURE_3D, CU_GRAPHICS_REGISTER_FLAGS_SURFACE_LDST);
+
+  // Bind the CUDA texture to a CUDA array
+  cuGraphicsMapResources(1, &cudaTex, 0);
+  cuGraphicsSubResourceGetMappedArray(&cudaArray, cudaTex, 0, 0);
+  cuGraphicsUnmapResources(1, &cudaTex, 0);
+
+  // Link the CUDA array to a CUDA surface
+  cuModuleGetSurfRef(&cudaSurfRef, module, "voxelGrid");
+  cuSurfRefSetArray(cudaSurfRef, cudaArray, 0);
+\end{lstlisting}
+
+\newpage
+
+\section{Voxelizations}\label{app:voxelizations}
+\voxelizationfig{monkey}{rlv}{Floating-point voxelization using RLV of the Blender monkey at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{monkey}{ilv}{Integer voxelization using ILV of the Blender monkey at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{monkey}{bre}{Integer voxelization using Bresenham of the Blender monkey at 16, 32, 64, 
+128, 256 and 512 resolution}{}
+
+\FloatBarrier
+
+\voxelizationfig{dragon}{rlv}{Floating-point voxelization using RLV of the Stanford dragon at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{dragon}{ilv}{Integer voxelization using ILV of the Stanford dragon at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{dragon}{bre}{Integer voxelization using Bresenham of the Stanford dragon at 16, 32, 64, 128, 256 and 512 resolution}{}
+
+\FloatBarrier
+
+\section{Performance Data}\label{app:performance-data}
+\begin{table}[h]
+  \centering
+\begin{tabular}{l|l|lllll}
+  Model & Algorithm & 128 & 256 & 512 & 1024 & 2048 \\
+  \hline
+         & RLV & 0.168047 & 0.360608 & 1.17848 & 4.18106 & 16.5649 \\
+  Monkey & ILV & 0.213802 & 0.576965 & 1.84135 & 5.96018 & 21.9102 \\
+         & Bre & 0.24961 & 0.636628 & 1.86863 & 5.72366 & 19.9131 \\
+  \hline
+         & RLV & 0.193737 & 0.369392 & 1.76889 & 6.86508 & 21.5765 \\
+  Bunny  & ILV & 0.602098 & 1.22562 & 3.29431 & 9.25156 & 27.0328 \\
+         & Bre & 0.988574 & 1.92251 & 4.5347 & 11.6089 & 31.9672 \\
+  \hline
+         & RLV & 1.22597 & 1.50882 & 2.32364 & 4.89038 & 18.1659 \\
+  Dragon & ILV & 3.86642 & 5.36262 & 8.12676 & 16.3983 & 42.3611 \\
+         & Bre & 6.71438 & 9.32611 & 13.8366 & 26.5671 & 60.6166 \\
+\end{tabular}
+\caption{The Raw performance data of the different algorithms, with varying models and resolution. Bre in the table is short for Bresenham. Timings are in milliseconds.}
+\end{table}
+
+
+\section{Voxelization Error}\label{app:compare-error}
+In the following figures the yellow voxels are voxels in both algorithms. The red voxels are only in the algorithm mentioned first and the blue voxels are only in the algorithm mentioned last. 
+For example, in \figref{fig:monkey-compare}, RLV is mentioned first and therefore corrispond with red voxels, while ILV is mentioned last and are blue voxels. 
+
+\voxelizationfig{monkey}{rlv_ilv}{Difference between RLV and ILV for the Blender monkey at 16, 32, 64, 128, 256 and 512 resolution}{fig:monkey-compare}
+\voxelizationfig{monkey}{rlv_bre}{Difference between RLV and Bresenham for the Blender monkey at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{monkey}{ilv_bre}{Difference between ILV and Bresenham for the Blender monkey at 16, 32, 64, 128, 256 and 512 resolution}{}
+
+\FloatBarrier
+
+\voxelizationfig{bunny}{rlv_ilv}{Difference between RLV and ILV for the Stanford bunny at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{bunny}{rlv_bre}{Difference between RLV and Bresenham for the Stanford bunny at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{bunny}{ilv_bre}{Difference between ILV and Bresenham for the Stanford bunny at 16, 32, 64, 128, 256 and 512 resolution}{}
+
+\FloatBarrier
+
+\voxelizationfig{dragon}{rlv_ilv}{Difference between RLV and ILV for the Stanford dragon at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{dragon}{rlv_bre}{Difference between RLV and Bresenham for the Stanford dragon at 16, 32, 64, 128, 256 and 512 resolution}{}
+\voxelizationfig{dragon}{ilv_bre}{Difference between ILV and Bresenham for the Stanford dragon at 16, 32, 64, 128, 256 and 512 resolution}{}
+
+\FloatBarrier

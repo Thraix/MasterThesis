@@ -1,0 +1,11 @@
+This thesis presents a comparison between different algorithms for optimal scanline voxelization of 3D models.
+As the optimal scanline relies on line voxelization, three such algorithms were evaluated.
+These were \textit{Real Line Voxelization} (RLV), \textit{Integer Line Voxelization} (ILV) and a 3D Bresenham line drawing algorithm.
+RLV and ILV were both based on voxel traversal by \citeauthor{voxeltraversal}.
+The algorithms were evaluated based on runtime and the approximation error of the integer versions, ILV and Bresenham.
+The result was that RLV performed better in every case, with ILV being 20-250\% slower and Bresenham being 20-500\% slower.
+% The timings were from different models and voxel resolutions.
+The error metric used was the Jaccard distance and generally started at 20\% and grew up towards 25\% for higher voxel resolutions.
+This was true for both ILV and Bresenham.
+The conclusion was that there is no reason to use any of the integer versions over RLV.
+As they both performed and approximated the original 3D model worse.

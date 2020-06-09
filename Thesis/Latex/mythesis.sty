@@ -1,0 +1,133 @@
+\setupThesis{
+  author={Tim Håkansson},
+  title={A Comparison of Optimal Scanline Voxelization Algorithms},
+  subtitle={},
+  year=2020,
+  type=msc,
+  subject={Computer Science and Software Engineering},
+  division={Division of Information Coding},
+  department=isy,
+  examiner={Ingemar Ragnemalm \AT \textsc{isy}, Linköping University},
+  supervisor={Harald Nautsch \AT \textsc{isy}, Linköping University \AND Åsa Detterfelt \AT MindRoad \AND Jens Ogniewski \AT MindRoad},
+  keywords={CUDA, GLSL OpenGL, Computer Graphics, Voxelization, Optimal Scanline, Bresenham},
+  isrn=LiTH-ISY-EX-{}-20/5307-{}-SE,
+  url={http://urn.kb.se/resolve?urn=urn:nbn:se:liu:diva-XXXXX},
+  dedication={}
+}
+
+%%% Since macros that define notation may be useful also to produce figures, these macros are kept in a separate file.
+\RequirePackage{mynotation}
+\RequirePackage{pgfplots}
+\RequirePackage{placeins}
+\usepackage{multirow}
+
+%%% Setup for natbib (natbib is loaded by rtthesis).
+\AtBeginDocument{%
+  \bibliographystyle{unsrtnat}%
+}
+
+
+%%% Tell \includegraphics where to search for files.
+\graphicspath{{fig/}}
+
+
+%%% For consistent formatting of lengths and other physical quantities.
+\RequirePackage[squaren]{SIunits}
+\RequirePackage{algorithm2e}
+\RequirePackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{cppstyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=cppstyle}
+
+
+%%% Define command for playing around with margin paragraphs.
+\definecolor{Warning}{rgb}{1.0,0.5,0.0}
+\newcommand{\Warning}[2][Warning]{\marginpar{\fcolorbox{Warning}{white}{\begin{minipage}{\linewidth}\textbf{\textcolor{Warning}{\emph{#1:}}}\par \tiny \sf #2\end{minipage}}}}
+
+
+%%% Define font size command to use for all verbatim environments.
+\newcommand{\verbatimsize}{\small}
+
+%%% Define some convenient referencing commands.
+\newcommand{\charef}[1]{\hyperref[#1]{Chapter~\ref*{#1}}}
+\newcommand{\secref}[1]{\hyperref[#1]{Section~\ref*{#1}}}
+\newcommand{\figref}[1]{\hyperref[#1]{Figure~\ref*{#1}}}
+\newcommand{\tabref}[1]{\hyperref[#1]{Tabel~\ref*{#1}}}
+\newcommand{\algref}[1]{\hyperref[#1]{Algorithm~\ref*{#1}}}
+\newcommand{\equref}[1]{\hyperref[#1]{Equation~\ref*{#1}}}
+\newcommand{\queref}[1]{\hyperref[#1]{Question~\ref{#1}}}
+\newcommand{\appref}[1]{\hyperref[#1]{Appendix~\ref{#1}}}
+
+%%% Define convenient cite author and cite command
+\newcommand{\call}[1]{\citeauthor{#1}~\cite{#1}}
+
+%%% Commands for marking the text red
+\newcommand{\fix}[1]{\noindent\colorbox{red}{[#1]}}
+\newcommand{\refneeded}{\colorbox{red}{\textbf{[ref]}}}
+
+%%% Algorithm continue statement
+\SetKw{Continue}{continue}
+
+%%% PGF plot settings
+\pgfplotsset{
+  log2x/.style={
+      xticklabel={
+        \pgfkeys{/pgf/fpu=true}
+        \pgfmathparse{2^\tick}%
+        \pgfmathprintnumber[fixed relative, precision=4]{\pgfmathresult}
+        \pgfkeys{/pgf/fpu=false}
+      }
+  },
+  log2y/.style={
+      yticklabel={
+        \pgfkeys{/pgf/fpu=true}
+        \pgfmathparse{2^\tick}%
+        \pgfmathprintnumber[fixed relative, precision=4]{\pgfmathresult}
+        \pgfkeys{/pgf/fpu=false}
+      }
+  }
+}
+
+%%% Tikz helper functions
+\newcommand*{\tikzvoxel}[3]
+{
+  \fill[#3] (#1,#2) rectangle (#1+1, #2+1);
+  \draw[very thin, black] (#1,#2) rectangle (#1+1, #2+1);
+}
+
+\newcommand*{\tikzgrid}[2]
+{
+  \foreach \i in {0,...,#1} {
+    \draw [very thin,black] (\i,0) -- (\i,#2);
+  }
+  \foreach \i in {0,...,#2} {
+    \draw [very thin,black] (0,\i) -- (#1,\i);
+  }
+}
+
+\colorlet{line-color}{gray}
+\colorlet{scanline-color}{gray!30}
+\colorlet{scanline-color2}{gray!10}

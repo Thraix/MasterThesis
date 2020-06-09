@@ -1,0 +1,147 @@
+\chapter{Discussion}\label{cha:discussion}
+This chapter discusses the results from the method.
+This includes explaining the given data and how the data changes depending on models and resolution.
+It will also give a critical view of the method and explain why certain methods were used.
+Finally, a discussion will be had about future improvements and research which can be done surrounding the thesis.
+
+\section{Results}
+This section discusses the results shown in the previous chapter.
+It serves the purpose of explaining and evaluating the data gathered from the method.
+
+\subsection{Performance of Models}
+From \figref{fig:performance-alg} in the results, it can be seen that the voxelization generally takes longer with the increase in triangle count.
+This makes sense, as having more triangles to process should increase the amount of time to voxelize. 
+The timings of the models do however seem to converge towards the same value as the resolution increases.
+This is likely due to the fact that even though there are less triangles in the monkey compared to the dragon, the monkey needs to generate more voxels per triangle.
+Meaning the GPU cannot utilize its parallelism when less triangles are being voxelized.
+This can be seen in \figref{fig:performance-alg} for RLV, where even though the dragon has ten times more triangles, it outperforms the bunny at higher resolutions.
+
+\vfill
+
+\subsection{Performance Between RLV and ILV}
+Looking back at article of the optimal scanline~\cite{scanline-voxelization}, the authors claimed 
+ILV was around 3\% faster than RLV. 
+Again, the data was not published in the article.
+This is however not consistent with the results of this thesis, where ILV was worse by between 20-250\%.
+There could be several reasons for this.
+
+First of, the article never states anything about the edge-cases in the integer version presented in \secref{ss:meth-integer-vox}.
+Fixing these edge-cases caused some overhead, which they might not have had.
+
+Secondly, much of the focus of the article was around the integer version and few details were explained about the floating-point version. 
+This meant a lot of improvisation had to be done when implementing the floating-point version.
+Therefore, it is possible it was implemented in a more efficient way.
+
+Thirdly, there is of course a possibility that the authors skipped some optimization steps in the article.
+This could be because they had a budget on the amount of pages they could write, or the full optimization steps were deemed too complicated for the article.
+
+The results of my implementation are however reasonable considering the different complexities of finding the scanline endpoints.
+In the floating-point version, all that had to be done is increasing the scanline length and calculating a reverse projection of the scanline direction.
+The integer version required iterating through multiple voxels to find the endpoint. 
+As such, it would make sense that the floating-point version required fewer calculations to find the endpoints.
+
+\subsection{Performance Between ILV and Bresenham}
+Since ILV and Bresenham use the same integer version, the performance difference is solely based on the line voxelization algorithm.
+The original hypothesis was that Bresenham would improve performance, but looking at the data, this is not the case.
+
+The big reason for this was the last problem described in \secref{ss:bresenham-problems}, that Bresenham could generate three voxels per iteration.
+This meant that additional overhead was needed in order to get the next voxel in the Bresenham voxelization.
+In ILV the same operations are performed no matter which direction the next voxel is in, but in Bresenham different calculations are done at different stages.
+This resulted in Bresenham causing more branch divergence on the GPU, which caused a major slow down.
+
+\subsection{Performance Data}
+After analyzing the performance data, it was noted that the timings changed drastically when iterating the voxelization many times.
+The reason for this is still unknown, but it is somehow caused by AWS.
+This was discovered after testing the voxelization on normal desktop computers, which had none of these issues.
+There are two hypotheses as to why this could happen.
+
+One reason could be that the program ran over a network.
+As described in \secref{s:aws}, to run the voxelization, ThinLinc together with VirtualGL was used.
+This could potentially cause extra overhead which brings down the performance. 
+It does however not explain why the CUDA performance is suffering from this, as VirtualGL only enables OpenGL 3D acceleration.
+However as the implementation makes use of OpenGL textures, VirtualGL could still be the culprit.
+
+The other hypothesis is that AWS allocates more resources as it is needed. 
+Meaning the program does not run at full power until it has run for a certain amount of time.
+This could explain the distinct performance boosts seen in \figref{fig:performance-runs} in the results.
+
+Again, there is no conclusive answer as to why the performance increases, the reasons above are just speculations as to why. 
+
+\subsection{Error Analysis}
+\tabref{tab:error-data} in the results shows all the error data between the different voxelization algorithms.
+The error between RLV and ILV grew as the resolution of the voxelization increased.
+The same was true between RLV and Bresenham.
+It seems like the error converges around 25\%, which is a considerable difference to the 2.5\% presented by \call{scanline-voxelization}.
+Again, the error presented in the article is a relative error of the voxel count between the two voxelizations, which is different to the Jaccard distance.
+
+An interesting data point is the error for the Stanford dragon.
+In the lower resolutions the error was a lot less than the error for the other models.
+This is likely due to the fact that the triangle count was much higher.
+The result is that a lot of triangles were fully inside a voxel, meaning there could not be an error for those triangles.
+For the triangles which were not fully inside a voxel, they generally spanned a total of 3-4 voxels and were therefore also prone to less error.
+This is also consistent with the error increasing as the resolution increased.
+
+Looking at \tabref{tab:error-data}, it can be seen that there was an error of up to 5\% between ILV and Bresenham.
+As they both used the same underlying integer algorithm, it would seem odd that there was an error between them.
+The error occured when the line touched more than two voxels.
+That is, the line did not pass through the face of the voxels.
+This is shown in \figref{fig:ilv-bresen-error}.
+The ambiguity of which voxel should be chosen caused the two versions to generate slightly different voxelizations.
+A potential fix for this would be to voxelize all the voxels touching the line, but this would most likely cause more edge-cases when finding the next scanline endpoint. 
+
+\input{fig/ilv-bresen-error.fig}
+
+\vfill
+
+\section{Method}
+This section serves the purpose of motivating and critically analysing the methods used in the thesis. 
+
+% \subsection{CUDA Vector Math}
+ 
+% Discuss that CUDA doesn't support vec2-4 by default.
+% As such, this needed to be implemented manually.
+% This might cause the performance to be less than optimal.
+
+% \subsection{CUDA-OpenGL Interoperability}
+% One thing of note with the CUDA-OpenGL interoperability is that it used OpenGL 3D textures when storing the voxelization in CUDA.
+% As such, there is a possibility that the texture access might not be as fast as indexing a CUDA array.
+% This would mean the performance might be impacted by using OpenGL.
+% However, as this method was used for all performance tests, there should not be a problem with comparing the performance between algorithms.
+
+\subsection{Performance Analysis}
+To run the performance analysis, CUDA events were the choice for this thesis.
+These events only measured the execution time of the kernel and did not include the time it took to launch it.
+An alternative to this would be to use CPU timers.
+This would give a more real depiction of how long the voxelization would take in a real environment, as it would include the launch time of the kernel.
+However, this thesis is set out to measure the performance of the voxelization and including the launch time of the kernel was deemed unnecessary.
+
+\subsection{Error Analysis}
+There is also something to be said about how the error was measured.
+As the Jaccard distance only calculates the amount of mismatched voxels, it is not a measurement of how well the general shape of the voxelizations matches.
+As such, it should not be used for comparing dissimilarity of voxelizations between different models.
+It is more of a metric to compare already similar data sets.
+The results of using this method could therefore be misleading when saying the voxelization has an error of 20-25\%.
+Such great error might leave the reader to believe the integer version is unrecognizable to the floating-point version.
+This is however not the case as the general shape is preserved very well, and it is hard to visually see the error without a comparison figure. 
+
+\section{Future Work}
+As always with a project like this there is still room for improvements.
+Some of those improvements are described in the following paragraphs.
+
+Firstly, modify the Bresenham algorithm to perform better when retrieving the next voxel in the line.
+The problem is that it performs different calculations depending on which axis it is currently evaluating.
+One solution could be to add an additional error for the dominant axis.
+This would then result in all axes performing the same calculations.
+Then to get the next voxel iterate the different axes until a voxel is found.
+To determine which axis to evaluate, a variable can be used to index the axes.
+
+Secondly, analyze the error between the algorithms when performing a supercover line voxelization.
+A supercover avoids the ambiguity of which voxel to voxelize when the line touches multiple voxels.
+This is done by voxelizing all the voxels instead of choosing one of them.
+Doing this could fix the problem with the integer versions generating different voxelizations due to the ambiguity.
+
+% \begin{itemize}
+%   \item Sort triangles based on their slope, in order to avoid branch divergence?
+%   \item Investigate the performance improvements after running the voxelization a few times?
+%   \item More models and details to better figure out what causes different levels of performance?
+% \end{itemize}

@@ -1,0 +1,204 @@
+\chapter{Method}\label{cha:method}
+This chapter describes the implementation and application of the theory in more detail.
+As such, it will build upon the literature in order to more precisely describe how the project was implemented.
+The chapter will also give a description of how the evaluation of the different algorithms was performed.
+
+\section{Implementation}
+The full source code of the project can be found at \cite{source-code}.
+The implementation was done in C++ with OpenGL and CUDA.
+CUDA handled the voxelization and OpenGL was used to render the results of it.
+The project was implemented in Linux, but can of course be ported to other platforms.
+The implementation details which were not covered in the literature will be explained in the following sections.
+
+\subsection{CUDA-OpenGL Interoperability}
+During development, some form of visual feedback was required in order to verify and debug the results of the voxelization.
+As such, a CUDA-OpenGL interoperation had to be implemented.
+This meant creating a 3D texture in OpenGL and binding it to CUDA in order to write to it.
+A simplified source code of this can be seen in \appref{app:cuda-opengl-inter}, which is adapted from~\cite{cuda-opengl-Interoperability}.
+This method links the memory of the 3D texture to a CUDA array, meaning no data is duplicated.
+This is required, as texture sizes of up to 8 GB were used.
+
+\vfill
+
+\subsection{Floating-Point Voxelization}
+The first implementation detail that needs to be explained is how the scanline direction, $d_{sl}$, as shown in \figref{fig:scanline-distance}, was calculated.
+Let's call the three vertices of a triangle $v_1$, $v_2$ and $v_3$, which are sorted in the most dominant axis (assumed to be the z-axis).
+The scanline direction was calculated in two different ways, depending on how the vertices were positioned.
+First, if all vertices were in the same z-slice, any direction would sufficed.
+In the implementation, the edge between $v_1$ and $v_3$ was chosen.
+If the vertices were not in the same z-slice, the gradient of the triangle with respect to $z$ was used.
+This was calculated by first solving the plane equation for $z$:
+$$ D = n_x x + n_y y + n_z z \rightarrow z = \frac{D - n_x x - n_y y}{n_z},$$
+where $n$ is the normal of the triangle and $D$ describes the position of the plane.
+The gradient was then the partial derivatives of the equation with respect to $x$ and $y$:
+$$d = (\frac{-n_x}{n_z}, \frac{-n_y}{n_z})$$
+Which was the resulting scanline direction.
+
+In both cases, the direction also needed to be normalized, meaning the final direction was
+$$d_{sl} = \frac{d}{|d|}.$$
+
+Each iteration of the algorithm, two scanline endpoints were calculated by reverse projecting the scanline direction onto the triangle's edges. 
+The scanline direction was scaled by $l_i$, which was increased by $l$ each iteration.
+Recall from the theory that $l = |d_{sl,x}| + |d_{sl,y}|$.
+Using the reverse projection, the endpoints were calculated as
+\begin{equation}
+v_p = v_1 + d_e\frac{l_i}{d_e \cdot d_{sl}},
+\label{eq:inverse-projection}
+\end{equation}
+where $d_e$ is the normalized direction of the edge it projects to.
+Note that this only works with the edges from $v_1$ to $v_2$ and $v_1$ to $v_3$.
+So a special case was needed for the edge from $v_2$ to $v_3$.
+This was solved by recalculating $v_2$ such that 
+\begin{equation*}
+  \left\{
+    \begin{aligned}
+      0 &= (v^\prime_2 - v_1) \cdot d_{sl} \\
+      v^\prime_2 - v_2 &= (v_3 - v_2)t 
+    \end{aligned}
+  \right.
+  .
+\end{equation*}
+That is, $v^\prime_2 - v_1$ is perpendicular to $d_{sl}$ and $v'_2 - v_2$ is parallel with $v_3 - v_2$.
+An example of this can be seen in \figref{fig:triangle-v2}.
+Solving the equation resulted in
+$$
+v^\prime_2 = v_2 + (v_3 - v_2)\frac{(v_1 - v_2) \cdot d_{sl}}{(v_3 - v_2) \cdot d_{sl}}.
+$$
+This was used instead of $v_1$ in \equref{eq:inverse-projection}, when projecting to the edge between $v_2$ and $v_3$.
+\input{fig/triangle-v2.fig}
+
+\subsection{Integer Voxelization}\label{ss:meth-integer-vox}
+In the integer version there were two edge cases which created holes in the voxelization.
+In order to solve these problems first recall the values $C_{lower}$, $C_{upper}$ and $C_k$ from the theory in \secref{ss:integer-optimal-scanline}.
+
+The first problem occurred when a new slice was started and an example is shown to the left in \figref{fig:integer-miss}.
+More specifically, it occurred when the next voxel was behind the current scanline, meaning it should have been included in it.
+This was resolved by checking if the value of $C_1$ was on the other side of $C_0$ relative to $C_{end}$.
+That is, if $C_0 < C_1 < C_{end}$ or $C_{end} < C_1 < C_0$.
+Here $C_{end}$ is defined as the $C_k$ of the last voxel on the triangle's edge.
+To test if the two values were on different sides, following equation was evaluated:
+$$ (C_1 - C_0) * (C_{end} - C_0) \leq 0.
+$$
+If this condition was met, either $C_{upper}$ or $C_{lower}$ was set to $C_0$ depending on if $C_{end}$ was greater or less than $C_0$ respectively.
+This was done in the same step as when the next endpoint for the scanline is calculated.
+
+The other case where holes occurred was when $(X_1, Y_1)$ for both edges were on different sides of the scanline.
+This sometimes happened for triangles which had a very acute angle at $v_1$.
+An example of this can be seen to the right in \figref{fig:integer-miss}.
+This problem was similarly detected as before by
+$$ (C^a_1 - C_0) * (C^b_1 - C_0) \leq 0,$$
+where $C^a_1$ and $C^b_1$ are $C_1$ for the two edges.
+When this was the case, $\Delta X$ and $\Delta Y$ were set similarly to how the scanline direction was chosen for the floating-point version.
+That is, the gradient of the triangle was calculated, but the division by $n_z$ was removed to avoid floating-point operations.
+However, this resulted in a scanline direction and not a difference between scanline endpoints.
+So it was also rotated by 90$\degree$, as the scanline should always be perpendicular to the scanline direction.
+The result was $\Delta X = N_y$ and $\Delta Y = -N_x$, where $N$ is the unnormalized normal of the triangle.
+These values were then used when determining the next scanline endpoints.
+
+\input{fig/integer-voxel-miss.fig}
+
+\subsection{Bresenham Algorithm}\label{ss:bresenham-problems}
+Worth noting is that Bresenham only works when $\Delta X$ is positive and greater than $\Delta Y$ and $\Delta Z$.
+To allow for negative directions, three changes were required.
+First, whenever $x$, $y$ or $z$ increased by one, they were instead decreased by one if the difference was negative.
+Another change was to set $\Delta X$, $\Delta Y$ and $\Delta Z$ to their absolute value.
+Finally, the iteration was terminated when the x-position of the voxel equals $X_1$, where $X_1$ is the last x-position on the line.
+This would however miss the last voxel on the line, which was resolved by setting the last voxel after the loop.
+
+To solve the problem where $\Delta X$ has to be greater than the other differences, a variable which keeps track of this axis was introduced.
+This variable will be called $A$ and was initialized to
+\begin{equation*}
+\left\{
+\begin{aligned}
+  A = 0 \hspace{1cm} &, max(\Delta X, \Delta Y, \Delta Z) = \Delta X \\
+  A = 1 \hspace{1cm} &, max(\Delta X, \Delta Y, \Delta Z) = \Delta Y \\
+  A = 2 \hspace{1cm} &, max(\Delta X, \Delta Y, \Delta Z) = \Delta Z \\
+\end{aligned}
+\right.
+.
+\end{equation*}
+Then whenever the $\Delta X$ or $x$ was needed, instead the variable was indexed using $A$.
+For example $\Delta [A]$, would give the greatest difference.
+The indices of the other two axes was calculated by increasing $A$ by one and two respectively, and then taking the modulus 3 of them.
+
+Another thing missing from the theory is that Bresenham is not 6-connected.
+This can be seen in \figref{fig:bresenham-8}.
+As the optimal scanline requires 6-connected lines in order to fill the interior, the Bresenham algorithm had to be modified to support this.
+The first intuitive way to do this would be to add a voxel at $(x,y,z)$ whenever $y$ or $z$ increases in the algorithm.
+This however, caused the voxelization to not follow the line correctly, as seen to the left in \figref{fig:bresenham-8}.
+This was solved by checking if the error in $y$ was greater than $\Delta Y$, then instead of voxelizing the right voxel, voxelize the top voxel.
+The result can be seen to the right in \figref{fig:bresenham-8}.
+The same check was performed on the z-axis.
+This modification of the algorithm in \appref{app:3dbresen} can be seen in \appref{app:3dbresen-4}.
+
+The final problem with the Bresenham algorithm was that the integer version of the scanline algorithm required being able to get the next voxel in the line.
+The problem was that the 6-connected Bresenham could generate up to three voxels each iteration.
+One way to solve the problem would be to run one iteration of Bresenham and store all voxels generated in that iteration in a list.
+Then the next time a new voxel is needed, return an unused voxel from the list.
+The way it was solved for this thesis however, was to keep track of where the last voxel was returned in the iteration.
+Then the next time a voxel was needed, the iteration resumed where it left off last.
+
+\input{fig/bresenham-8.fig}
+
+\input{fig/bresenham-4.fig}
+
+\subsection{Voxel Rendering}\label{ss:voxel_rendering}
+In order to test the results of the optimal scanline, some form of rendering was needed.
+This thesis only considers rendering which results in cubes in a uniform grid.
+
+One approach would be to iterate through the 3D texture on the CPU and render a cube for every existing voxel.
+This would be bad for numerous reasons.
+First off, the data created on the GPU would need to be copied over to the CPU, which creates significant overhead.
+Especially since the data could get up towards 8 GB in size for the highest resolution.
+Secondly, rendering all voxels (even occluded ones) would slow down the rendering significantly.
+
+Another way would be to write each voxel coordinate to a list on the GPU when voxelizing the model.
+The data could then be used in a geometry shader, where each coordinate is transformed into a cube.
+This avoids the copying to the CPU and requires less data to store the voxelization, since only occupied voxels are stored.
+It can, however, render the same voxel multiple times if the voxelization does not keep track of which voxels are already occupied.
+
+Therefore, rendering the scene using raymarching was both deemed easier and a potentially faster method.
+The data was not transferred between the CPU and GPU and only the visible voxels were rendered.
+
+To perform the raymarching, it used the RLV algorithm to traverse the voxels.
+In this case however, the line was not terminated when it reached the endpoint of the line segment, as it does not exist.
+Instead it terminated when the line intersected with an existing voxel or when it had exited the voxel grid.
+
+\section{Evaluation}
+When performing the comparisons of the different line algorithms, several variable changes were considered in the experiments.
+
+Firstly, multiple models were tested on, with ranging levels of detail.
+The models that were used included the Blender monkey (also called Suzanne)~\cite{blender-monkey}, the Stanford bunny~\cite{stanford-rep} and the Stanford dragon~\cite{stanford-rep}.
+These can be seen in \figref{fig:models}.
+The triangle count of each model was 3936, 69451 and 871414 respectively.
+Suzanne was also subdivided once in Blender~\cite{blender}, in order to increase the triangle count to 3936.
+
+Secondly, the resolution of the voxel grid was varied for each model.
+The resolution varied between 128-2048, incremented by powers of 2.
+Due to GPU memory limits, resolutions greater than 2048 were not possible.
+
+\input{fig/models.fig}
+
+\subsection{Performance Analysis}
+To profile the performance of the algorithms, CUDA events were used~\cite{cuda-profiling}.
+To use the CUDA events, two timestamp events were created.
+One of them was initialized before the kernel ran using the CUDA function \texttt{cuEventRecord}.
+Then after the kernel ran, another event was initialized.
+These timestamps were entirely handled by the GPU, meaning the CPU would not wait for the timestamps to be executed.
+The function \texttt{cuEventSynchronize}, was used in order to wait for the events to be executed.
+The time between two timestamps was then determined by the CUDA call \texttt{cuEventElapsedTime}.
+
+\newpage
+
+\subsection{Error Analysis}
+The error was calculated for each of the resolutions, models and combinations of line voxelizations.
+Meaning RLV was compared to both ILV and Bresenham, but ILV was also compared to Bresenham.
+
+The comparison was done by first voxelizing using the first algorithm with the voxel value of 1.
+Then the voxelization ran again with the other algorithm (with the same 3D texture). 
+This time the voxel value was determined depending on the current voxel value in that position.
+If the value at that position was 1 or 2, the value 2 was written, otherwise the value 3 was written.
+The result was a voxelization where the intersection had value 2, the voxels only in the first algorithm had value 1 and the voxels only in the second had value 3.
+
+To calculate the error, a simple CUDA kernel was created which iterated through the whole voxel space and summed up the amount of each of the values.
+With these values the error could be calculated using the formulas in \secref{s:error}.

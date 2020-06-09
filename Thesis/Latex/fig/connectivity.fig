@@ -1,0 +1,36 @@
+\begin{figure}[h]
+\centering
+\hspace*{\fill}
+\subfloat{
+  \begin{tikzpicture}[scale=0.4]
+
+    \tikzvoxel{1}{1}{line-color}
+
+    \tikzvoxel{1}{0}{scanline-color}
+    \tikzvoxel{1}{2}{scanline-color}
+    \tikzvoxel{0}{1}{scanline-color}
+    \tikzvoxel{2}{1}{scanline-color}
+
+  \end{tikzpicture}
+}
+\hfill
+\subfloat{
+  \begin{tikzpicture}[scale=0.4]
+
+    \tikzvoxel{1}{1}{line-color}
+
+    \tikzvoxel{1}{0}{scanline-color}
+    \tikzvoxel{1}{2}{scanline-color}
+    \tikzvoxel{0}{1}{scanline-color}
+    \tikzvoxel{2}{1}{scanline-color}
+
+    \tikzvoxel{0}{0}{scanline-color}
+    \tikzvoxel{2}{0}{scanline-color}
+    \tikzvoxel{2}{2}{scanline-color}
+    \tikzvoxel{0}{2}{scanline-color}
+
+  \end{tikzpicture}
+}
+\hspace*{\fill}
+\caption{Connectivity in the 2D case, where the light gray squares are connected to the dark gray square. The left figure is 4-connected, whilst the right is 8-connected.}\label{fig:connectivity}
+\end{figure}

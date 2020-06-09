@@ -1,0 +1,55 @@
+\begin{figure}[h]
+\centering
+\hspace*{\fill}
+\subfloat{
+  \begin{tikzpicture}[scale=0.4]
+
+    \draw[thick] (1.4, 1.3) -- (7.8, 7.4);
+    \draw[thick] (1.4, 1.3) -- (6.9, 3.2);
+    \draw[thick] (6.9, 3.2) -- (7.8, 7.4);
+
+    \draw (0,0) rectangle (9,9);
+
+  \end{tikzpicture}
+}
+\hfill
+\subfloat{
+  \begin{tikzpicture}[scale=0.4]
+
+    \tikzvoxel{1}{1}{scanline-color}
+    \tikzvoxel{2}{1}{scanline-color}
+    \tikzvoxel{2}{2}{scanline-color}
+    \tikzvoxel{3}{2}{scanline-color}
+    \tikzvoxel{3}{3}{scanline-color}
+    \tikzvoxel{4}{3}{scanline-color}
+    \tikzvoxel{4}{4}{scanline-color}
+    \tikzvoxel{5}{4}{scanline-color}
+    \tikzvoxel{5}{5}{scanline-color}
+    \tikzvoxel{6}{5}{scanline-color}
+    \tikzvoxel{6}{6}{scanline-color}
+    \tikzvoxel{7}{6}{scanline-color}
+    \tikzvoxel{7}{7}{scanline-color}
+    \tikzvoxel{7}{6}{scanline-color}
+    \tikzvoxel{7}{5}{scanline-color}
+    \tikzvoxel{7}{4}{scanline-color}
+    \tikzvoxel{7}{3}{scanline-color}
+    \tikzvoxel{6}{4}{scanline-color}
+    \tikzvoxel{6}{3}{scanline-color}
+    \tikzvoxel{6}{2}{scanline-color}
+    \tikzvoxel{5}{2}{scanline-color}
+    \tikzvoxel{4}{2}{scanline-color}
+    \tikzvoxel{3}{2}{scanline-color}
+    \tikzvoxel{3}{1}{scanline-color}
+    \tikzvoxel{5}{3}{scanline-color}
+
+    \draw[thick] (1.4, 1.3) -- (7.8, 7.4);
+    \draw[thick] (1.4, 1.3) -- (6.9, 3.2);
+    \draw[thick] (6.9, 3.2) -- (7.8, 7.4);
+
+    \draw (0,0) rectangle (9,9);
+
+  \end{tikzpicture}
+}
+\hspace*{\fill}
+\caption{Rasterization of a triangle}\label{fig:rasterization}
+\end{figure}

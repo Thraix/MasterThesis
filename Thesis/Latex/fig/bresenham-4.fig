@@ -1,0 +1,53 @@
+\begin{figure}[h]
+\centering
+\hspace*{\fill}
+\subfloat{
+  \begin{tikzpicture}[scale=0.4]
+
+    \tikzvoxel{0}{0}{line-color}
+    \tikzvoxel{1}{0}{line-color}
+    \tikzvoxel{2}{1}{line-color}
+    \tikzvoxel{3}{1}{line-color}
+    \tikzvoxel{4}{2}{line-color}
+    \tikzvoxel{5}{2}{line-color}
+    \tikzvoxel{6}{2}{line-color}
+    \tikzvoxel{7}{3}{line-color}
+    \tikzvoxel{8}{3}{line-color}
+    \tikzvoxel{9}{4}{line-color}
+    \tikzvoxel{10}{4}{line-color}
+
+    \tikzvoxel{2}{0}{scanline-color}
+    \tikzvoxel{4}{1}{scanline-color}
+    \tikzvoxel{7}{2}{scanline-color}
+    \tikzvoxel{9}{3}{scanline-color}
+
+    \draw[black, thick] (0.5,0.5) -- (10.5,4.5);
+  \end{tikzpicture}
+}
+\hfill
+\subfloat{
+  \begin{tikzpicture}[scale=0.4]
+
+    \tikzvoxel{0}{0}{line-color}
+    \tikzvoxel{1}{0}{line-color}
+    \tikzvoxel{2}{1}{line-color}
+    \tikzvoxel{3}{1}{line-color}
+    \tikzvoxel{4}{2}{line-color}
+    \tikzvoxel{5}{2}{line-color}
+    \tikzvoxel{6}{2}{line-color}
+    \tikzvoxel{7}{3}{line-color}
+    \tikzvoxel{8}{3}{line-color}
+    \tikzvoxel{9}{4}{line-color}
+    \tikzvoxel{10}{4}{line-color}
+
+    \tikzvoxel{1}{1}{scanline-color}
+    \tikzvoxel{4}{1}{scanline-color}
+    \tikzvoxel{6}{3}{scanline-color}
+    \tikzvoxel{9}{3}{scanline-color}
+
+    \draw[black, thick] (0.5,0.5) -- (10.5,4.5);
+  \end{tikzpicture}
+}
+\hspace*{\fill}
+\caption{Wrong and correct 6-connected Bresenham algorithm to the left and right respectivly. The light gray rectangles shows the added voxels not in the original Bresenham algorithm.}\label{fig:bresenham-8}
+\end{figure}

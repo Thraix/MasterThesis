@@ -1,0 +1,69 @@
+\begin{figure}[h]
+\centering
+\hspace*{\fill}
+\subfloat{
+\begin{tikzpicture}[scale=0.5]
+
+\tikzvoxel{3}{1}{line-color}
+\tikzvoxel{3}{0}{line-color}
+\tikzvoxel{4}{0}{line-color}
+\tikzvoxel{5}{0}{line-color}
+\tikzvoxel{6}{0}{line-color}
+\tikzvoxel{7}{0}{line-color}
+                
+\tikzvoxel{0}{3}{line-color}
+\tikzvoxel{1}{3}{line-color}
+\tikzvoxel{1}{4}{line-color}
+\tikzvoxel{2}{4}{line-color}
+\tikzvoxel{2}{5}{line-color}
+\tikzvoxel{3}{5}{line-color}
+                
+\tikzvoxel{2}{1}{scanline-color}
+\tikzvoxel{2}{2}{scanline-color}
+\tikzvoxel{1}{2}{scanline-color}
+                
+\tikzvoxel{6}{1}{scanline-color}
+\tikzvoxel{5}{1}{scanline-color}
+\tikzvoxel{5}{2}{scanline-color}
+\tikzvoxel{4}{2}{scanline-color}
+\tikzvoxel{3}{2}{scanline-color}
+\tikzvoxel{3}{3}{scanline-color}
+\tikzvoxel{2}{3}{scanline-color}
+
+% \tikzgrid{7}{8}
+
+\draw[black, thick] (3.5,1.5) -- (0.5,3.5);
+\draw[black, thick] (7.5,0.5) -- (1.5,4.5);
+\end{tikzpicture}
+}
+\hfill
+\subfloat{
+\begin{tikzpicture}[scale=0.5]
+
+\tikzvoxel{0}{2}{line-color}
+\tikzvoxel{1}{2}{line-color}
+\tikzvoxel{1}{3}{line-color}
+\tikzvoxel{2}{3}{line-color}
+\tikzvoxel{3}{3}{line-color}
+\tikzvoxel{3}{4}{line-color}
+\tikzvoxel{4}{4}{line-color}
+\tikzvoxel{5}{4}{line-color}
+                
+\tikzvoxel{1}{1}{line-color}
+\tikzvoxel{2}{1}{line-color}
+\tikzvoxel{3}{1}{line-color}
+\tikzvoxel{3}{0}{line-color}
+\tikzvoxel{4}{0}{line-color}
+\tikzvoxel{5}{0}{line-color}
+
+\tikzvoxel{3}{2}{scanline-color}
+
+% \tikzgrid{7}{8}
+
+\draw[black, thick] (0.5,2.5) -- (1.5,2.5);
+\draw[black, thick] (3.5,3.5) -- (3.5,1.5);
+\end{tikzpicture}
+}
+\hspace*{\fill}
+\caption{Voxel being missed by the scanlines. The dark gray rectangles are the edges of the triangle and the light gray rectangles are the voxels of the scanlines.}\label{fig:integer-miss}
+\end{figure}

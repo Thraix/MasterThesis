@@ -1,0 +1,25 @@
+\newcommand*{\dx}{1}
+\newcommand*{\dy}{1/3}
+\begin{figure}[t]
+\centering
+\begin{tikzpicture}[scale=1.5]
+\begin{scope}[shift={(-0.5,-0.5)}]
+\draw[black] (0,0) rectangle (1,1);
+\fill[gray!30] (0,0) rectangle (1,1);
+\draw[gray] (0,1) -- (1,0);
+\draw[black,arrows=->] (-1.5,-1.0) -- (-1.5,-0.5) node[above] {$y$};
+\draw[black,arrows=->] (-1.5,-1.0) -- (-1.0,-1.0) node[right] {$x$};
+
+\end{scope}
+\begin{scope}[scale=(\dx + \dy) / (sqrt(\dx^2+\dy^2),rotate=atan(\dx/\dy),shift={(-0.0,-0.5)}]
+\draw[arrows=->,black] (0,1) -> (0,1.5) node[right] {$d_{sl}$};
+\draw[thick,black] (-1.5,0) -- (1.5,0);
+\draw[thick,black] (-1.5,1) -- (1.5,1);
+\draw[dashed,black] (-0.25,0) --(-0.25,1) node[left] at (-0.25, 0.4) {$l$};
+\draw[black] (-0.25,0) rectangle (-0.15,0.1);
+\end{scope}
+
+\end{tikzpicture}
+\caption{A voxel, in gray, being intersected with two parallel lines with a distance $l$ between them. The direction of the scanline is labeled $d_{sl}$.}
+\label{fig:scanline-distance}
+\end{figure}

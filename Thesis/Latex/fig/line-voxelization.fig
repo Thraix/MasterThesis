@@ -1,0 +1,21 @@
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=0.4]
+
+\tikzvoxel{0}{0}{scanline-color}
+\tikzvoxel{1}{0}{scanline-color}
+\tikzvoxel{1}{1}{scanline-color}
+\tikzvoxel{2}{1}{scanline-color}
+\tikzvoxel{3}{1}{scanline-color}
+\tikzvoxel{3}{2}{scanline-color}
+\tikzvoxel{4}{2}{scanline-color}
+\tikzvoxel{5}{2}{scanline-color}
+\tikzvoxel{6}{2}{scanline-color}
+\tikzvoxel{6}{3}{scanline-color}
+
+% \tikzgrid{7}{4}
+
+\draw[black, thick] (0.25,0.55) -- (6.75,3.2);
+\end{tikzpicture}
+\caption{Line voxelization, where all cells touching the line is marked as voxel. This works the same in 3D, but with an additional axis.}\label{fig:line-voxelization}
+\end{figure}
