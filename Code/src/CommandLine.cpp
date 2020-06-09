@@ -38,7 +38,7 @@ CommandLineData::CommandLineData(int argc, char **argv)
       std::string arg = &argv[i][1];
       if(arg == "h" || arg == "-help")
       {
-        Log::Info(1+(char*)R"(
+        std::cout << (1+(char*)R"(
 Usage: Voxelizer [options]
 
   Options:
@@ -57,7 +57,7 @@ Usage: Voxelizer [options]
                         [bunny, dragon, monkey, sphere, tetra,
                         cube, quad, %filename%]
     -s, --screenshot  Take a screenshot and close application instantly
-        )");
+        )") << std::endl;
         valid = false;
         return;
       }
